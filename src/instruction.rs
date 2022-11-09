@@ -14,6 +14,12 @@ impl Value {
     pub fn from_byte (val: u8) -> Value {
         Value::Byte(val)
     }
+    pub fn unwrap (&self) -> u8 {
+        match self {
+            Value::Byte(byte) => *byte,
+            Value::Register(reg) => reg.value,
+        }
+    }
 }
 
 #[derive(Debug)]

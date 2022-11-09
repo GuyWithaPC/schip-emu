@@ -1,30 +1,26 @@
 
 mod components;
 mod instruction;
+mod execution;
 use instruction::{Instruction,Value};
-use components::{Register};
+use components::{Register,Resolution};
 
 pub struct Emulator {
-    registers: Vec<Register>
+    registers: Vec<Register>,
+    resolution_mode: Resolution,
+    display: [[bool; 64]; 128],
+    ram: [u8; 0x1000],
+    rpl: [u8; 8],
+    keys: [bool; 0x10],
+    key_block: u8, // the register to put the next keypress into
+    call_stack: Vec<u16>,
+    pro_counter: u16,
+    mem_pointer: u16,
 }
 
 fn main() {
     let mut emulator = Emulator::new();
-    let inst = Instruction::from(&emulator,0x63,0x25);
-    println!("{:?}",inst);
-    emulator.set_register(3,0xF0);
-    let inst = Instruction::from(&emulator,0x81,0x30);
-    match inst {
-        Instruction::Load { ref reg, ref value } => {
-            emulator.set_register(reg.loc,match value {
-                Value::Byte(byte) => *byte,
-                Value::Register(reg) => reg.value,
-            });
-        },
-        _ => {},
-    }
-    println!("{:?}",inst);
-    println!("{:?}",emulator.get_register(1));
+
 }
 
 impl Emulator {
@@ -35,18 +31,16 @@ impl Emulator {
         }
 
         Self {
-            registers
+            registers,
+            resolution_mode: Resolution::Low,
+            display: [[false; 64]; 128],
+            ram: [0u8; 0x1000],
+            rpl: [0u8; 8],
+            keys: [false; 0x10],
+            key_block: 0x10,
+            call_stack: Vec::new(),
+            pro_counter: 0x200,
+            mem_pointer: 0x000,
         }
-    }
-    pub fn get_register_data (&self, x: u8) -> Register {
-        Register {
-            ..self.registers[x as usize]
-        }
-    }
-    pub fn get_register (&self, x: u8) -> u8 {
-        self.registers[x as usize].value
-    }
-    pub fn set_register (&mut self, x: u8, val: u8) {
-        self.registers[x as usize].value = val;
     }
 }
