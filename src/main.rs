@@ -1,9 +1,8 @@
-
 mod components;
-mod instruction;
 mod execution;
-use instruction::{Instruction,Value};
-use components::{Register,Resolution};
+mod instruction;
+use components::{Register, Resolution};
+use instruction::{Instruction, Value};
 
 pub struct Emulator {
     registers: Vec<Register>,
@@ -22,11 +21,10 @@ pub struct Emulator {
 
 fn main() {
     let mut emulator = Emulator::new();
-
 }
 
 impl Emulator {
-    pub fn new () -> Emulator {
+    pub fn new() -> Emulator {
         let mut registers = Vec::new();
         for i in 0..0x10 as u8 {
             registers.push(components::Register::new(i));
