@@ -59,6 +59,9 @@ pub enum Instruction {
     HighResolution(bool), // changes the resolution mode
     Draw { x: Register, y: Register, byte_count: u8 }, // draw byte_count bytes at (x,y)
     DrawLarge { x: Register, y: Register }, // draws a 16x16 sprite at (x,y) (only in high-res mode)
+    ScrollRight,
+    ScrollLeft,
+    ScrollDown(u8),
 
     GetTimer(Register), // set reg to delay timer
     SetTimer(Register), // set delay timer to reg
@@ -90,9 +93,15 @@ impl Instruction {
                 match byte {
                     0xE0 => ClearScreen,
                     0xEE => Return,
+                    0xFB => ScrollRight,
+                    0xFC => ScrollLeft,
                     0xFE => HighResolution(false),
                     0xFF => HighResolution(true),
-                    _ => Invalid,
+                    _ => if y == 0xC {
+                        ScrollDown(nibble)
+                    } else {
+                        Invalid
+                    },
                 }
             },
             0x1 => Jump(addr),

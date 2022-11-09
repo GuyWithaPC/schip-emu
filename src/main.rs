@@ -16,6 +16,8 @@ pub struct Emulator {
     call_stack: Vec<u16>,
     pro_counter: u16,
     mem_pointer: u16,
+    delay_timer: u8,
+    sound_timer: u8,
 }
 
 fn main() {

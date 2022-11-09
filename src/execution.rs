@@ -191,7 +191,81 @@ impl Emulator {
                         }
                     }
                     self.set_register(0xF,u8::from(collision));
+                },
+                ScrollRight => {
+                    for x in (0..124).rev() {
+                        let temp = self.display[x];
+                        self.display[x+4] = temp;
+                        self.display[x] = [false;64];
+                    }
+                },
+                ScrollLeft => {
+                    for x in 4..128 {
+                        let temp = self.display[x];
+                        self.display[x-4] = temp;
+                        self.display[x] = [false;64];
+                    }
+                },
+                ScrollDown(pixels) => {
+                    let pixels = pixels as usize;
+                    for y in (0..64-pixels).rev() as usize {
+                        for x in 0..128 as usize {
+                            let temp = self.display[x][y];
+                            self.display[x][y+pixels] = temp;
+                            self.display[x][y] = false;
+                        }
+                    }
                 }
+
+                GetTimer(x) => {
+                    self.set_register(x.loc,self.delay_timer);
+                },
+                SetTimer(x) => {
+                    self.delay_timer = x.value;
+                },
+                SetSound(x) => {
+                    self.sound_timer = x.value;
+                },
+
+                GetDigit(x) => {
+                    self.mem_pointer = (x.value as u16) * 5;
+                },
+                StoreDecimal(x) => {
+                    let x = x.value;
+                    self.set_ram(self.mem_pointer,x / 100);
+                    self.set_ram(self.mem_pointer+1,(x / 10) % 10);
+                    self.set_ram(self.mem_pointer+2, x % 10);
+                },
+
+                StoreRegisters(x) => {
+                    let x = x.loc;
+                    for i in 0..=x as u16 {
+                        let reg = self.get_register(i as u8);
+                        self.set_ram(self.mem_pointer+i,reg);
+                    }
+                },
+                LoadRegisters(x) => {
+                    let x = x.loc;
+                    for i in 0..=x as u16 {
+                        let val = self.get_ram(self.mem_pointer+i);
+                        self.set_register(i as u8, val);
+                    }
+                },
+                StoreRegistersRPL(x) => {
+                    let x = x.loc;
+                    for i in 0..=x as u8 {
+                        let reg = self.get_register(i as u8);
+                        self.set_rpl(i,reg);
+                    }
+                },
+                LoadRegistersRPL(x) => {
+                    let x = x.loc;
+                    for i in 0..=x as u8 {
+                        let val = self.get_rpl(i);
+                        self.set_register(i, val);
+                    }
+                },
+                Invalid => {},
             }
         }
 
