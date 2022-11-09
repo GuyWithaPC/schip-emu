@@ -286,7 +286,7 @@ mod helpers {
         }
         return ret
     }
-    pub fn twobyte_twobools(bytea: u8, byteb: u8) -> [bool;16] {
+    pub fn twobyte_twobools(bytea: u8, byteb: u8) -> [bool;16] { // tried to call it 2byte2bools, but it wouldn't let me XD
         let mut ret = [false; 16];
         let num = ((bytea as u16) << 8) | (byteb as u16);
         for j in 0..16 {
