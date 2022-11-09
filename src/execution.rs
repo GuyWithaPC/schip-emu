@@ -140,30 +140,33 @@ impl Emulator {
                     let mut collision = false;
                     let bytes = self.get_ram_slice(
                         self.mem_pointer,
-                        self.mem_pointer + byte_count
+                        self.mem_pointer + byte_count as u16
                     );
                     let sprite = helpers::load_sprite(bytes);
-                    if self.resolution_mode == Resolution::Low { // low resolution draw
-                        let (x, y) = (x.value as usize % 64, y.value as usize % 32);
-                        for x_o in 0..8 as usize {
-                            for y_o in 0..byte_count as usize {
-                                let x_pos = x_o + x;
-                                let y_pos = y_o + y;
-                                if sprite[y_o][x_o] {
-                                    let collide_once = self.draw_lo(x_pos, y_pos);
-                                    collision = if collision { collision } else { collide_once };
+                    match self.resolution_mode {
+                        Resolution::Low => { // low resolution draw
+                            let (x, y) = (x.value as usize % 64, y.value as usize % 32);
+                            for x_o in 0..8 as usize {
+                                for y_o in 0..byte_count as usize {
+                                    let x_pos = x_o + x;
+                                    let y_pos = y_o + y;
+                                    if sprite[y_o][x_o] {
+                                        let collide_once = self.draw_lo(x_pos, y_pos);
+                                        collision = if collision { collision } else { collide_once };
+                                    }
                                 }
                             }
-                        }
-                    } else { // high resolution draw
-                        let (x, y) = (x.value as usize % 128, y.value as usize % 64);
-                        for x_o in 0..8 as usize {
-                            for y_o in 0..byte_count as usize {
-                                let x_pos = x_o + x;
-                                let y_pos = y_o + y;
-                                if sprite[y_o][x_o] {
-                                    let collide_once = self.draw_hi(x_pos,y_pos);
-                                    collision = if collision { collision } else { collide_once };
+                        },
+                        Resolution::High => { // high resolution draw
+                            let (x, y) = (x.value as usize % 128, y.value as usize % 64);
+                            for x_o in 0..8 as usize {
+                                for y_o in 0..byte_count as usize {
+                                    let x_pos = x_o + x;
+                                    let y_pos = y_o + y;
+                                    if sprite[y_o][x_o] {
+                                        let collide_once = self.draw_hi(x_pos, y_pos);
+                                        collision = if collision { collision } else { collide_once };
+                                    }
                                 }
                             }
                         }
@@ -208,7 +211,7 @@ impl Emulator {
                 },
                 ScrollDown(pixels) => {
                     let pixels = pixels as usize;
-                    for y in (0..64-pixels).rev() as usize {
+                    for y in (0..64-pixels).rev() {
                         for x in 0..128 as usize {
                             let temp = self.display[x][y];
                             self.display[x][y+pixels] = temp;
@@ -289,7 +292,7 @@ mod helpers {
         for j in 0..16 {
             let i = 15 - j;
             let mask = 1 << i;
-            ret[j] = (byte & mask) >> i == 1;
+            ret[j] = (num & mask) >> i == 1;
         }
         return ret
     }
@@ -300,8 +303,8 @@ mod helpers {
         }
         return ret
     }
-    pub fn load_large_sprite(bytes: &[u8]) -> [[bool;16];16] {
-        let mut ret = [[false; 16]; 16];
+    pub fn load_large_sprite(bytes: &[u8]) -> Vec<[bool;16]> {
+        let mut ret = Vec::new();
         for j in 0..8 {
             let i = j * 2;
             ret.push(twobyte_twobools(bytes[i],bytes[i+1]));

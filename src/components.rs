@@ -43,7 +43,9 @@ impl Emulator {
         self.ram[addr as usize]
     }
     pub fn get_ram_slice (&self, addr_a: u16, addr_b: u16) -> &[u8] {
-        self.ram[addr_a..addr_b]
+        let a = addr_a as usize;
+        let b = addr_b as usize;
+        &self.ram[a..b]
     }
     pub fn set_ram (&mut self, addr: u16, val: u8) {
         self.ram[addr as usize] = val;
@@ -58,7 +60,7 @@ impl Emulator {
         self.call_stack.push(val);
     }
     pub fn pop_callstack (&mut self) -> u16 {
-        self.call_stack.pop()?
+        self.call_stack.pop().expect("there was nothing on the callstack!")
     }
 
     // register accessor functions

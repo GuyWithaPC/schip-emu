@@ -43,6 +43,8 @@ impl Emulator {
             call_stack: Vec::new(),
             pro_counter: 0x200,
             mem_pointer: 0x000,
+            delay_timer: 0x00,
+            sound_timer: 0x00,
         }
     }
 }
