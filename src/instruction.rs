@@ -3,78 +3,78 @@ use crate::components::Register;
 use crate::Emulator;
 
 #[derive(Debug)]
-pub enum Value<'a> { // to encompass values that are either register or byte
-    Register(&'a Register),
+pub enum Value { // to encompass values that are either register or byte
+    Register(Register),
     Byte(u8),
 }
-impl <'a> Value <'a> {
-    pub fn from_reg (val: &'a Register) -> Value <'a> {
+impl Value {
+    pub fn from_reg (val: Register) -> Value {
         Value::Register(val)
     }
-    pub fn from_byte (val: u8) -> Value <'a> {
+    pub fn from_byte (val: u8) -> Value {
         Value::Byte(val)
     }
 }
 
 #[derive(Debug)]
-pub enum Instruction <'a> {
+pub enum Instruction {
     ClearScreen, // clear the screen
 
     Jump(u16), // jump to addr
-    JumpPlus { addr: u16, x: &'a Register }, // jump to addr + R{X}
+    JumpPlus { addr: u16, x: Register }, // jump to addr + R{X}
 
     Call(u16), // call a procedure at addr
     Return, // return from a procedure
 
-    SkipIfEqual { reg: &'a Register, comp: Value <'a> }, // skip if a == b
-    SkipIfUnequal { reg: &'a Register, comp: Value <'a> }, // skip if a != b
+    SkipIfEqual { reg: Register, comp: Value }, // skip if a == b
+    SkipIfUnequal { reg: Register, comp: Value }, // skip if a != b
 
-    SkipIfKey(&'a Register), // skip if the key with the value of reg is pressed
-    SkipIfNotKey(&'a Register), // skip if the key with the value of reg is not pressed
-    KeyBlock(&'a Register), // block for keypress, store value in register
+    SkipIfKey(Register), // skip if the key with the value of reg is pressed
+    SkipIfNotKey(Register), // skip if the key with the value of reg is not pressed
+    KeyBlock(Register), // block for keypress, store value in register
 
-    Load { reg: &'a Register, value: Value<'a> }, // load value into register
+    Load { reg: Register, value: Value }, // load value into register
 
-    AddInPlace { reg: &'a Register, byte: u8 }, // add byte to register, store result in register
+    AddInPlace { reg: Register, byte: u8 }, // add byte to register, store result in register
 
-    Or { x: &'a Register, y: &'a Register }, // OR x and y, store in x
-    And { x: &'a Register, y: &'a Register }, // AND x and y, store in x
-    Xor { x: &'a Register, y: &'a Register }, // XOR x and y, store in x
-    Add { x: &'a Register, y: &'a Register }, // ADD x and y, store in x (sets overflow flag)
-    Sub { x: &'a Register, y: &'a Register }, // SUB x and y, store in x (sets !overflow flag)
-    ShiftRight(&'a Register), // SHR x in-place (sets overflow flag)
-    ShiftLeft(&'a Register), // SHL x in-place (sets overflow flag)
+    Or { x: Register, y: Register }, // OR x and y, store in x
+    And { x: Register, y: Register }, // AND x and y, store in x
+    Xor { x: Register, y: Register }, // XOR x and y, store in x
+    Add { x: Register, y: Register }, // ADD x and y, store in x (sets overflow flag)
+    Sub { x: Register, y: Register }, // SUB x and y, store in x (sets !overflow flag)
+    ShiftRight(Register), // SHR x in-place (sets overflow flag)
+    ShiftLeft(Register), // SHL x in-place (sets overflow flag)
 
     SetPointer(u16), // set the memory pointer to addr
-    AddPointer(&'a Register), // adds register to memory pointer
+    AddPointer(Register), // adds register to memory pointer
 
-    Random { x: &'a Register, byte: u8 }, // random value & byte, goes in x
+    Random { x: Register, byte: u8 }, // random value & byte, goes in x
 
     HighResolution(bool), // changes the resolution mode
-    Draw { x: &'a Register, y: &'a Register, byte_count: u8 }, // draw byte_count bytes at (x,y)
-    DrawLarge { x: &'a Register, y: &'a Register }, // draws a 16x16 sprite at (x,y) (only in high-res mode)
+    Draw { x: Register, y: Register, byte_count: u8 }, // draw byte_count bytes at (x,y)
+    DrawLarge { x: Register, y: Register }, // draws a 16x16 sprite at (x,y) (only in high-res mode)
 
-    GetTimer(&'a Register), // set reg to delay timer
-    SetTimer(&'a Register), // set delay timer to reg
-    SetSound(&'a Register), // set sound timer to reg
+    GetTimer(Register), // set reg to delay timer
+    SetTimer(Register), // set delay timer to reg
+    SetSound(Register), // set sound timer to reg
 
-    GetDigit(&'a Register), // sets I to the location of the character representing reg
-    StoreDecimal(&'a Register), // stores the decimal representation of reg in RAM
+    GetDigit(Register), // sets I to the location of the character representing reg
+    StoreDecimal(Register), // stores the decimal representation of reg in RAM
 
-    StoreRegisters(&'a Register), // stores registers 0..reg in RAM
-    LoadRegisters(&'a Register), // loads registers 0..reg from RAM
-    StoreRegistersRPL(&'a Register), // stores registers 0..reg in RPL memory
-    LoadRegistersRPL(&'a Register), // loads registers 0..reg from RPL memory
+    StoreRegisters(Register), // stores registers 0..reg in RAM
+    LoadRegisters(Register), // loads registers 0..reg from RAM
+    StoreRegistersRPL(Register), // stores registers 0..reg in RPL memory
+    LoadRegistersRPL(Register), // loads registers 0..reg from RPL memory
 
     Invalid, // this is passed if the instruction didn't exist
 }
-impl <'a> Instruction <'a> {
+impl Instruction {
     pub fn from (emulator: &Emulator, msb: u8, lsb: u8) -> Instruction {
         let opcode = (msb & 0xF0) >> 4;
         let x = msb & 0x0F;
         let y = (lsb & 0xF0) >> 4;
-        let x_reg = emulator.get_register(x);
-        let y_reg = emulator.get_register(y);
+        let x_reg = emulator.get_register_data(x);
+        let y_reg = emulator.get_register_data(y);
         let byte = lsb;
         let nibble = lsb & 0x0F;
         let addr = (((msb as u16) << 8) | (lsb as u16)) & 0x0FFF;
