@@ -11,7 +11,7 @@ use clap::Parser;
 
 const OFF_COLOR: olc::Pixel = olc::BLACK;
 const ON_COLOR: olc::Pixel = olc::WHITE;
-const FRAME_TIME: f32 = 1.0/6000.0;
+const FRAME_TIME: f32 = 1.0/600.0;
 
 pub struct Emulator {
     registers: Vec<Register>,
@@ -108,7 +108,7 @@ impl Emulator {
             timer_time: 0.0,
         };
         ret.load_rom(0x000,"system/font.bin");
-        ret.load_rom(0x200,"demo/Sierpinsky.ch8");
+        ret.load_rom(0x200,"demo/turnover77.ch8");
         return ret
     }
 

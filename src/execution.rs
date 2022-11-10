@@ -313,7 +313,7 @@ mod helpers {
     }
     pub fn load_large_sprite(bytes: &[u8]) -> Vec<[bool; 16]> {
         let mut ret = Vec::new();
-        for j in 0..8 {
+        for j in 0..16 {
             let i = j * 2;
             ret.push(twobyte_twobools(bytes[i], bytes[i + 1]));
         }
