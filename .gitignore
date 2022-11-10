@@ -12,3 +12,6 @@ Cargo.lock
 #stuff from IntelliJ that doesn't need to show up in the repo
 /.idea/
 schip-emu.iml
+
+# a local file I'm keeping local so that I don't have to license everyone's chip8 ROMS
+/demo/

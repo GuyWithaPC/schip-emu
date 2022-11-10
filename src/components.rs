@@ -1,4 +1,6 @@
 use crate::Emulator;
+use std::fs::File;
+use std::io::{Read};
 
 #[derive(Debug)]
 pub struct Register {
@@ -63,6 +65,24 @@ impl Emulator {
             .expect("there was nothing on the callstack!")
     }
 
+    // ROM loading function
+    pub fn load_rom(&mut self, loc: u16, filename: &str) {
+        print!("{:?} => ",filename);
+        let mut load_file = match File::open(filename) {
+            Ok(f) => f,
+            Err(e) => panic!("could not open file: {:?}",e)
+        };
+        let mut buf: Vec<u8> = Vec::new();
+        match load_file.read_to_end(&mut buf) {
+            Ok(_) => (),
+            Err(e) => panic!("could not open file: {:?}",e)
+        };
+        println!("{} bytes.", buf.len());
+        for i in 0..buf.len() {
+            self.set_ram(loc + i as u16, buf[i]);
+        }
+    }
+
     // register accessor functions
     pub fn get_register_data(&self, x: u8) -> Register {
         Register {
@@ -98,10 +118,12 @@ impl Emulator {
         if x >= 64 || y >= 32 {
             return false;
         }
+        let x = x * 2;
+        let y = y * 2;
         let mut drew_over = false;
 
-        for xo in 0..1 as usize {
-            for yo in 0..1 as usize {
+        for xo in 0..2 as usize {
+            for yo in 0..2 as usize {
                 if self.display[x + xo][y + yo] {
                     self.display[x + xo][y + yo] = false;
                     drew_over = true;

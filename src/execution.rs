@@ -3,6 +3,8 @@ use crate::instruction::{Instruction, Value};
 use crate::Emulator;
 use rand;
 
+const DEBUG: bool = false;
+
 impl Emulator {
     pub fn execute(&mut self) -> bool {
         // returns a bool for redrawing
@@ -13,6 +15,13 @@ impl Emulator {
         self.pro_counter += 2;
 
         let inst = Instruction::from(&self, msb, lsb);
+        // this is just some debug code
+        if DEBUG {match inst {
+            Instruction::Jump(_) => (),
+            Instruction::JumpPlus {ref addr, ref x} => (),
+            _ => println!("{:?}",inst)
+        };}
+        // here's the actual execution
         {
             use Instruction::*;
             match inst {
@@ -54,19 +63,19 @@ impl Emulator {
 
                 SkipIfKey(reg) => {
                     let x = reg.value as usize;
-                    if self.keys[x] {
+                    if self.key_handler.keys[x] {
                         self.pro_counter += 2;
                     }
                 }
                 SkipIfNotKey(reg) => {
                     let x = reg.value as usize;
-                    if !self.keys[x] {
+                    if !self.key_handler.keys[x] {
                         self.pro_counter += 2;
                     }
                 }
                 KeyBlock(reg) => {
                     let x = reg.loc;
-                    self.key_block = x;
+                    self.key_handler.key_hold = x;
                 }
 
                 Load { reg, value } => {
@@ -76,8 +85,7 @@ impl Emulator {
                 }
 
                 AddInPlace { reg, byte } => {
-                    let x = reg.loc;
-                    self.set_register(x, byte);
+                    self.set_register(reg.loc, reg.value.overflowing_add(byte).0);
                 }
 
                 Or { x, y } => {
@@ -147,8 +155,8 @@ impl Emulator {
                             let (x, y) = (x.value as usize % 64, y.value as usize % 32);
                             for x_o in 0..8 as usize {
                                 for y_o in 0..byte_count as usize {
-                                    let x_pos = x_o + x;
-                                    let y_pos = y_o + y;
+                                    let x_pos = (x_o + x) % 64;
+                                    let y_pos = (y_o + y) % 32;
                                     if sprite[y_o][x_o] {
                                         let collide_once = self.draw_lo(x_pos, y_pos);
                                         collision =
@@ -162,8 +170,8 @@ impl Emulator {
                             let (x, y) = (x.value as usize % 128, y.value as usize % 64);
                             for x_o in 0..8 as usize {
                                 for y_o in 0..byte_count as usize {
-                                    let x_pos = x_o + x;
-                                    let y_pos = y_o + y;
+                                    let x_pos = (x_o + x) % 128;
+                                    let y_pos = (y_o + y) % 64;
                                     if sprite[y_o][x_o] {
                                         let collide_once = self.draw_hi(x_pos, y_pos);
                                         collision =
