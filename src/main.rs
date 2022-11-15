@@ -9,9 +9,9 @@ use olc_pge as olc;
 use olc_pge::PixelGameEngine;
 use clap::Parser;
 
-const OFF_COLOR: olc::Pixel = olc::BLACK;
-const ON_COLOR: olc::Pixel = olc::WHITE;
-const FRAME_TIME: f32 = 1.0/600.0;
+const OFF_COLOR: olc::Pixel = olc::VERY_DARK_GREEN;
+const ON_COLOR: olc::Pixel = olc::DARK_GREEN;
+const FRAME_TIME: f32 = 1.0/1200.0;
 
 pub struct Emulator {
     registers: Vec<Register>,
@@ -108,7 +108,7 @@ impl Emulator {
             timer_time: 0.0,
         };
         ret.load_rom(0x000,"system/font.bin");
-        ret.load_rom(0x200,"demo/turnover77.ch8");
+        ret.load_rom(0x200,"demo/TETRIS.ch8");
         return ret
     }
 

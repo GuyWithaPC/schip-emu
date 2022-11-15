@@ -16,11 +16,13 @@ impl Emulator {
 
         let inst = Instruction::from(&self, msb, lsb);
         // this is just some debug code
-        if DEBUG {match inst {
+        if DEBUG {
+            match inst {
             Instruction::Jump(_) => (),
             Instruction::JumpPlus {ref addr, ref x} => (),
             _ => println!("{:?}",inst)
-        };}
+            };
+        }
         // here's the actual execution
         {
             use Instruction::*;
@@ -185,7 +187,10 @@ impl Emulator {
                 }
                 DrawLarge { x, y } => {
                     use helpers;
-                    let (x, y) = (x.value as usize % 128, y.value as usize % 64);
+                    let (x, y) = match self.resolution_mode {
+                        Resolution::High => (x.value as usize % 128, y.value as usize % 64),
+                        Resolution::Low => (x.value as usize % 64, y.value as usize % 32)
+                    };
                     redraw = true;
                     let mut collision = false;
                     let bytes = self.get_ram_slice(self.mem_pointer, self.mem_pointer + 32);
@@ -195,7 +200,10 @@ impl Emulator {
                             let x_pos = x_o + x;
                             let y_pos = y_o + y;
                             if sprite[y_o][x_o] {
-                                let collide_once = self.draw_hi(x_pos, y_pos);
+                                let collide_once = match self.resolution_mode {
+                                    Resolution::High => self.draw_hi(x_pos, y_pos),
+                                    Resolution::Low => self.draw_lo(x_pos,y_pos)
+                                };
                                 collision = if collision { collision } else { collide_once };
                             }
                         }
@@ -239,6 +247,9 @@ impl Emulator {
 
                 GetDigit(x) => {
                     self.mem_pointer = (x.value as u16) * 5;
+                }
+                GetLargeDigit(x) => {
+                    self.mem_pointer = (x.value as u16) * 10 + 80;
                 }
                 StoreDecimal(x) => {
                     let x = x.value;

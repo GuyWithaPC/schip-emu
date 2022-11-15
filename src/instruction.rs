@@ -108,6 +108,7 @@ pub enum Instruction {
     SetSound(Register), // set sound timer to reg
 
     GetDigit(Register), // sets I to the location of the character representing reg
+    GetLargeDigit(Register), // sets I to the location of the large character (0-9)
     StoreDecimal(Register), // stores the decimal representation of reg in RAM
 
     StoreRegisters(Register),    // stores registers 0..reg in RAM
@@ -205,6 +206,7 @@ impl Instruction {
                 0x18 => SetSound(x_reg),
                 0x1E => AddPointer(x_reg),
                 0x29 => GetDigit(x_reg),
+                0x30 => GetLargeDigit(x_reg),
                 0x33 => StoreDecimal(x_reg),
                 0x55 => StoreRegisters(x_reg),
                 0x65 => LoadRegisters(x_reg),
